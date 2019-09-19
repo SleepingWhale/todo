@@ -56,8 +56,18 @@ export class TodoItem extends Component {
     }
   };
 
+  handleRemove = () => {
+    const { id, remove } = this.props;
+    remove(id);
+  };
+
+  handleToggle = () => {
+    const { id, toggle } = this.props;
+    toggle(id);
+  };
+
   render() {
-    const { id, text, completed, toggle, remove } = this.props;
+    const { text, completed } = this.props;
     const { editing, newText } = this.state;
 
     return (
@@ -70,13 +80,13 @@ export class TodoItem extends Component {
             className="toggle"
             type="checkbox"
             checked={completed}
-            onChange={() => toggle(id)}
+            onChange={this.handleToggle}
           />
           <label>{text}</label>
           <button
             type="button"
             className="destroy"
-            onClick={() => remove(id)}
+            onClick={this.handleRemove}
           />
         </div>
         <input

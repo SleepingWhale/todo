@@ -1,33 +1,11 @@
 import React, { Component } from 'react';
 import 'todomvc-app-css/index.css';
-import { TodoItem } from './TodoItem';
-import { getGuid, pluralize, ENTER_KEY } from './utils';
+import { TodoItemContainer } from './TodoItemContainer';
+import { pluralize, ENTER_KEY } from './utils';
 
 export class App extends Component {
   state = {
-    newTodo: '',
-    todos: [
-      {
-        completed: true,
-        text: 'pull',
-        id: getGuid()
-      },
-      {
-        completed: false,
-        text: 'commit',
-        id: getGuid()
-      },
-      {
-        completed: false,
-        text: 'push',
-        id: getGuid()
-      },
-      {
-        completed: false,
-        text: 'repeat',
-        id: getGuid()
-      }
-    ]
+    newTodo: ''
   };
 
   handleChange = event => {
@@ -41,92 +19,28 @@ export class App extends Component {
 
     event.preventDefault();
 
-    const { newTodo, todos } = this.state;
+    const { newTodo } = this.state;
+    const { addTodo } = this.props;
     const text = newTodo.trim();
 
     if (text) {
       this.setState({
-        todos: [...todos, { text, completed: false, id: getGuid() }],
         newTodo: ''
       });
+      addTodo(text);
     }
   };
 
   handleToggleAll = event => {
     const { checked } = event.target;
-    const { todos } = this.state;
+    const { toggleAll } = this.props;
 
-    this.setState({
-      todos: todos.map(todo => {
-        return {
-          ...todo,
-          completed: checked
-        };
-      })
-    });
-  };
-
-  handleToggleTodo = id => {
-    const { todos } = this.state;
-    const todoIndex = todos.findIndex(todo => todo.id === id);
-
-    this.setState({
-      todos: [
-        ...todos.slice(0, todoIndex),
-        {
-          ...todos[todoIndex],
-          completed: !todos[todoIndex].completed
-        },
-        ...todos.slice(todoIndex + 1)
-      ]
-    });
-  };
-
-  handleRemoveTodo = id => {
-    const { todos } = this.state;
-
-    this.setState({
-      todos: todos.filter(todo => todo.id !== id)
-    });
-  };
-
-  handleUpdateText = (id, text) => {
-    const { todos } = this.state;
-    const todoIndex = todos.findIndex(todo => todo.id === id);
-
-    this.setState({
-      todos: [
-        ...todos.slice(0, todoIndex),
-        {
-          ...todos[todoIndex],
-          text
-        },
-        ...todos.slice(todoIndex + 1)
-      ]
-    });
-  };
-
-  handleClearCompleted = () => {
-    const { todos } = this.state;
-
-    this.setState({
-      todos: todos.reduce((acc, todo) => {
-        if (!todo.completed) acc.push(todo);
-
-        return acc;
-      }, [])
-    });
-  };
-
-  getInCompletedCount = () => {
-    const { todos } = this.state;
-
-    return todos.filter(todo => !todo.completed).length;
+    toggleAll(checked);
   };
 
   render() {
-    const { todos, newTodo } = this.state;
-    const completedCount = this.getInCompletedCount();
+    const { newTodo } = this.state;
+    const { uncompletedCount, removeCompletedTodo, todoList } = this.props;
 
     return (
       <section className="todoapp">
@@ -149,24 +63,16 @@ export class App extends Component {
           />
           <label htmlFor="toggle-all"></label>
           <ul className="todo-list">
-            {todos.map(todo => (
-              <TodoItem
-                completed={todo.completed}
-                text={todo.text}
-                key={todo.id}
-                id={todo.id}
-                toggle={this.handleToggleTodo}
-                remove={this.handleRemoveTodo}
-                updateText={this.handleUpdateText}
-              />
+            {todoList.map(id => (
+              <TodoItemContainer id={id} key={id} />
             ))}
           </ul>
         </section>
         <footer className="footer">
           <span className="todo-count">
-            <span>{`${completedCount} ${pluralize(
+            <span>{`${uncompletedCount} ${pluralize(
               'item',
-              completedCount
+              uncompletedCount
             )} left`}</span>
           </span>
           <ul className="filters">
@@ -191,7 +97,7 @@ export class App extends Component {
           <button
             type="button"
             className="clear-completed"
-            onClick={this.handleClearCompleted}
+            onClick={removeCompletedTodo}
           >
             Clear completed
           </button>
